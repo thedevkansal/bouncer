@@ -55,8 +55,10 @@ export function createEns(cfg: EnsConfig) {
   const client = createPublicClient({
     chain: sepolia,
     transport: fallback([
-      http(cfg.rpcUrl || "https://ethereum-sepolia-rpc.publicnode.com", { retryCount: 2 }),
-      http("https://sepolia.drpc.org", { retryCount: 1 }),
+      http(cfg.rpcUrl || "https://ethereum-sepolia-rpc.publicnode.com", { retryCount: 2, timeout: 8000 }),
+      http("https://sepolia.drpc.org", { retryCount: 1, timeout: 8000 }),
+      http("https://1rpc.io/sepolia", { retryCount: 1, timeout: 8000 }),
+      http("https://ethereum-sepolia.rpc.subquery.network/public", { retryCount: 1, timeout: 8000 }),
     ]),
     batch: { multicall: true },
   });
@@ -89,6 +91,19 @@ export function createEns(cfg: EnsConfig) {
     const name = normalize(rawName);
     const hit = cache.get(name);
     if (!fresh && hit && Date.now() - hit.fetchedAt < cfg.cacheMs) return hit;
+    try {
+      return await fetchRecord(name);
+    } catch (e) {
+      // RPC outage: reuse the last good read for up to 60s (logged), else fail closed with 503.
+      if (hit && Date.now() - hit.fetchedAt < 60_000) {
+        console.warn(`[ens] RPC error, serving ${Math.round((Date.now() - hit.fetchedAt) / 1000)}s-old record for ${name}`);
+        return hit;
+      }
+      throw new IdentityError(503, "rejected_identity", `ENS lookup unavailable (Sepolia RPC): ${(e as Error).message.split("\n")[0]}`);
+    }
+  }
+
+  async function fetchRecord(name: string): Promise<EnsRecord> {
     const ur = { universalResolverAddress: cfg.universalResolver };
     const text = (key: string) => client.getEnsText({ name, key, ...ur }).catch(() => null);
     const [reg, address, maxSpend, rate, paths, stepUp, status, context] = await Promise.all([
