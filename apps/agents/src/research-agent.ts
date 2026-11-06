@@ -18,7 +18,11 @@ const signer = createClientHederaSigner(
   PrivateKey.fromStringECDSA(process.env.AGENT_HEDERA_KEY!),
   { network: "hedera:testnet" },
 );
-const client = new x402Client().register("hedera:*", new ExactHederaScheme(signer));
+// Agent-side spending control: only HBAR on Hedera testnet, hard cap per payment.
+const maxTinybars = process.env.AGENT_MAX_TINYBARS_PER_PAYMENT || "1500000000"; // 15 HBAR
+const client = new x402Client()
+  .register("hedera:*", new ExactHederaScheme(signer))
+  .setSpendControls({ allowedAssets: [{ network: "hedera:testnet", asset: "0.0.0", maxAmountPerPayment: maxTinybars }] });
 const payFetch = wrapFetchWithPayment(fetch, client);
 
 // 1. Discover
