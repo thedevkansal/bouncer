@@ -5,8 +5,8 @@
 - [x] 21:30 repo scaffold, docs skeletons, auto-resume
 
 ## M1 (by 23:00) — tag m1-payment-loop
-- [ ] x402 402→pay→200 on Hedera testnet (tx id recorded)
-- [ ] ENSv2 subname resolves live + signature check
+- [x] 22:28 x402 402→pay→200 on Hedera testnet (tx 0.0.7162784@1793984260.232389277)
+- [~] 22:15 ENSv2 subname resolves live (signature check pending)
 - [ ] One Agent Pass verification validated server-side
 
 ## M2 (by 01:00) — tag m2-full-flow
