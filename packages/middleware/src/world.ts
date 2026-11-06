@@ -138,7 +138,7 @@ export function createWorld(cfg: WorldConfig) {
   }
 
   return {
-    async start(purpose: string): Promise<Challenge> {
+    async start(purpose: string, ttlSec = cfg.ttlSec): Promise<Challenge> {
       const d = await discovery();
       const params: Record<string, string> = { scope: "openid" };
       const r = await fetch(d.device_authorization_endpoint, {
@@ -157,7 +157,7 @@ export function createWorld(cfg: WorldConfig) {
         verificationUri: body.verification_uri,
         verificationUriComplete: body.verification_uri_complete ?? body.verification_uri,
         createdAt: now,
-        expiresAt: now + Math.min(cfg.ttlSec, Number(body.expires_in ?? cfg.ttlSec)) * 1000,
+        expiresAt: now + Math.min(ttlSec, Number(body.expires_in ?? ttlSec)) * 1000,
       };
       challenges.set(c.id, c);
       deviceCodes.set(c.id, body.device_code);

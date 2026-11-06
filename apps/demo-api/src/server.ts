@@ -88,9 +88,9 @@ app.get("/events", (req, res) => {
 app.post("/world/bind", async (req, res) => {
   if (!world) return res.status(503).json({ error: "world_not_configured" });
   const agent = String(req.body?.agent ?? "");
-  const rec = await ens.lookup(agent).catch(() => null);
+  const rec = (await ens.lookup(agent, true).catch(() => null)) ?? (await ens.lookup(agent, true).catch(() => null));
   if (!rec?.registered) return res.status(400).json({ error: "agent must be a registered ENSv2 name" });
-  const c = await world.start(`bind:${rec.name}`);
+  const c = await world.start(`bind:${rec.name}`, Number(process.env.BIND_TTL_SEC || 600));
   res.json(world.view(c));
 });
 app.get("/world/challenge/:id", (req, res) => {
@@ -161,4 +161,10 @@ app.get("/premium/dataset", (req: BouncerRequest, res) => {
   });
 });
 
-app.listen(PORT, () => console.log(`[demo-api] listening on ${PUBLIC_URL}`));
+// JSON errors (never leak stack traces / HTML to agents).
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[demo-api]", err?.message ?? err);
+  res.status(err?.status ?? 500).json({ error: "internal_error", message: String(err?.shortMessage ?? err?.message ?? err).split("\n")[0] });
+});
+
+app.listen(PORT,() => console.log(`[demo-api] listening on ${PUBLIC_URL}`));
