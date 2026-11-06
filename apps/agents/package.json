@@ -5,7 +5,8 @@
   "scripts": {
     "research": "tsx src/research-agent.ts",
     "swarm": "tsx src/swarm.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "bind": "tsx src/bind.ts"
   },
   "dependencies": {
     "@x402/core": "2.30.0",

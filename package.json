@@ -11,7 +11,8 @@
     "agent": "pnpm --filter @bouncer/agents research",
     "typecheck": "pnpm -r typecheck",
     "ens:setup": "tsx scripts/ens-setup.ts",
-    "world:verify": "tsx scripts/world-verify.ts"
+    "world:verify": "tsx scripts/world-verify.ts",
+    "bind": "pnpm --filter @bouncer/agents bind"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
