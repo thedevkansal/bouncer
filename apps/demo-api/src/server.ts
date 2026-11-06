@@ -1,6 +1,7 @@
 import express from "express";
 import {
-  bouncer, bus, recentEvents, usdToAmount, emit, createEns, createWorld, createBindings, type BouncerRequest,
+  bouncer, bus, recentEvents, usdToAmount, emit, createEns, createWorld, createBindings, createStepUp, createHcsAudit,
+  type BouncerRequest,
 } from "@bouncer/middleware";
 import { bouncerConfig, PORT, PUBLIC_URL } from "./config.js";
 
@@ -103,10 +104,42 @@ app.post("/world/challenge/:id/cancel", (req, res) => {
 app.get("/world/bindings", (_req, res) => res.json(bindings.all()));
 app.get("/ens/:name", async (req, res) => res.json(await ens.lookup(req.params.name, true).catch((e) => ({ error: String(e) }))));
 
+// Hedera HCS audit topic (tamper-evident spend log).
+const hcs = process.env.HCS_TOPIC_ID
+  ? createHcsAudit({
+      operatorId: process.env.HEDERA_OPERATOR_ID!,
+      operatorKey: process.env.HEDERA_OPERATOR_KEY!,
+      topicId: process.env.HCS_TOPIC_ID,
+      mirrorUrl: process.env.HEDERA_MIRROR_URL || "https://testnet.mirrornode.hedera.com",
+    })
+  : null;
+app.get("/audit", async (_req, res) => res.json({ topicId: hcs?.topicId, messages: hcs ? await hcs.recent(30).catch(() => []) : [] }));
+
+const stepUp = createStepUp(world);
+
 app.use(
   ...bouncer(bouncerConfig, {
     identify: ens.identify,
     humanFor: async (agent) => bindings.humanFor(agent),
+    stepUp: stepUp.gate,
+    onSettled: async (p, ctx) => {
+      stepUp.onSettled(ctx);
+      if (!hcs) return;
+      const r = await hcs.submit({
+        v: 1,
+        agent: ctx?.agent ?? "unknown",
+        humanHash: ctx?.humanHash?.slice(0, 16) ?? null,
+        verified: Boolean(ctx?.verified),
+        path: ctx?.route.route ?? "",
+        amount: p.amount,
+        asset: p.asset,
+        priceUsd: ctx?.priceUsd ?? 0,
+        tx: p.transaction,
+        ts: new Date().toISOString(),
+        stepUp: ctx?.stepUpChallenge,
+      });
+      emit({ type: "audit", agent: ctx?.agent, txId: p.transaction, detail: { topicId: hcs.topicId, sequence: r.sequence, hcsTx: r.txId } });
+    },
   }),
 );
 
