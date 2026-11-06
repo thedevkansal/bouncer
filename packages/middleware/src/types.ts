@@ -53,6 +53,8 @@ export interface BouncerContext {
   verified: boolean; // human-backed per World
   priceUsd: number;
   startedAt: number;
+  /** World step-up challenge that authorised this above-threshold request. */
+  stepUpChallenge?: string;
 }
 
 export type BouncerRequest = Request & { bouncer?: BouncerContext };
