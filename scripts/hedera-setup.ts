@@ -58,6 +58,20 @@ if (!agentId) {
 saveEnv("AGENT_HEDERA_ID", agentId);
 console.log("agent payer:", agentId);
 
+// An alias-created account is "hollow" (no key on ledger) until it pays for a tx itself.
+// x402 facilitators verify the payer's signature against the ledger key, so complete it.
+const info = (await (await fetch(`${MIRROR}/api/v1/accounts/${agentId}`)).json()) as { key: unknown };
+if (!info.key) {
+  console.log("completing hollow agent account (agent pays its own tx)…");
+  const agentClient = Client.forTestnet().setOperator(AccountId.fromString(agentId), PrivateKey.fromStringECDSA(agentKeyHex));
+  const tx = await new TransferTransaction()
+    .addHbarTransfer(AccountId.fromString(agentId), Hbar.fromTinybars(-1))
+    .addHbarTransfer(AccountId.fromString(opId), Hbar.fromTinybars(1))
+    .execute(agentClient);
+  await tx.getReceipt(agentClient);
+  agentClient.close();
+}
+
 // HCS audit topic
 if (!process.env.HCS_TOPIC_ID) {
   const tx = await new TopicCreateTransaction()
