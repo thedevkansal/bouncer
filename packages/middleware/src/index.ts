@@ -14,6 +14,8 @@ export { bus, recentEvents, clearEvents, emit } from "./events.js";
 export { resetRateLimits, humanUsage } from "./ratelimit.js";
 export { usdToAmount } from "./x402.js";
 export { createWorld, type World, type Challenge, type ChallengeStatus } from "./world.js";
+export { createEns, signingMessage, POLICY_KEYS, type Ens, type EnsRecord } from "./ens.js";
+export { createBindings, type Bindings } from "./bindings.js";
 
 /** Result of the ENS identity + policy stage (a, b). */
 export interface AgentIdentity {
