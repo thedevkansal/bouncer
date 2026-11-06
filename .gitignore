@@ -1,0 +1,25 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+logs/
+*.log
+coverage/
+.vercel/
+.turbo/
+# raw video
+video/raw/
+*.mp4
+*.mov
+*.mkv
+# foundry
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/
+# local state
+.state/
