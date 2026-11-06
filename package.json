@@ -1,0 +1,24 @@
+{
+  "name": "bouncer",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev:api": "pnpm --filter @bouncer/demo-api dev",
+    "keys": "tsx scripts/gen-keys.ts",
+    "hedera:setup": "tsx scripts/hedera-setup.ts",
+    "agent": "pnpm --filter @bouncer/agents research",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "dotenv": "^16.4.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@hiero-ledger/sdk": "2.90.1",
+    "viem": "2.57.16"
+  }
+}
