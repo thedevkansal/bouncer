@@ -2,13 +2,18 @@
   "name": "@bouncer/agents",
   "version": "0.1.0",
   "type": "module",
-  "scripts": { "research": "tsx src/research-agent.ts", "swarm": "tsx src/swarm.ts", "typecheck": "tsc -p ." },
+  "scripts": {
+    "research": "tsx src/research-agent.ts",
+    "swarm": "tsx src/swarm.ts",
+    "typecheck": "tsc -p ."
+  },
   "dependencies": {
     "@x402/core": "2.30.0",
     "@x402/fetch": "2.30.0",
     "@x402/hedera": "2.30.0",
     "@hiero-ledger/sdk": "2.90.1",
     "viem": "2.57.16",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "@bouncer/middleware": "workspace:*"
   }
 }

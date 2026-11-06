@@ -30,6 +30,9 @@ importers:
 
   apps/agents:
     dependencies:
+      '@bouncer/middleware':
+        specifier: workspace:*
+        version: link:../../packages/middleware
       '@hiero-ledger/sdk':
         specifier: 2.90.1
         version: 2.90.1

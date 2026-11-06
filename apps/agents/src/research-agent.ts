@@ -8,6 +8,9 @@ import { wrapFetchWithPayment, decodePaymentResponseHeader } from "@x402/fetch";
 import { createClientHederaSigner } from "@x402/hedera";
 import { ExactHederaScheme } from "@x402/hedera/exact/client";
 import { PrivateKey } from "@hiero-ledger/sdk";
+import { privateKeyToAccount } from "viem/accounts";
+import { randomUUID } from "node:crypto";
+import { signingMessage } from "@bouncer/middleware";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 loadEnv({ path: path.resolve(here, "../../../.env") });
@@ -32,10 +35,19 @@ const manifest = (await (await fetch(`${API}/.well-known/bouncer.json`)).json())
 const research = manifest.endpoints.find((e) => e.url.endsWith("/premium/research"))!;
 console.log("[agent] discovered", research.url, research.priceUsd);
 
-// 2. Call + pay autonomously
-const res = await payFetch(`${research.url}?q=${encodeURIComponent("hedera x402")}`, {
-  headers: { "X-Agent-Id": "research-agent" },
-});
+// 2. Sign the request with the key our ENS name resolves to, then call + pay autonomously
+const agentName = process.env.AGENT_ENS_NAME;
+const url = new URL(`${research.url}?q=${encodeURIComponent("hedera x402")}`);
+const headers: Record<string, string> = { "X-Agent-Id": "research-agent" };
+if (agentName && process.env.AGENT_EVM_KEY && !process.argv.includes("--anon")) {
+  const account = privateKeyToAccount(process.env.AGENT_EVM_KEY as `0x${string}`);
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const nonce = randomUUID();
+  const signature = await account.signMessage({ message: signingMessage("GET", url.pathname + url.search, ts, nonce) });
+  Object.assign(headers, { "X-Agent-ENS": agentName, "X-Agent-Signature": signature, "X-Agent-Timestamp": ts, "X-Agent-Nonce": nonce });
+  console.log("[agent] signed as", agentName, account.address);
+}
+const res = await payFetch(url, { headers });
 console.log("[agent] status", res.status);
 const pr = res.headers.get("PAYMENT-RESPONSE") || res.headers.get("X-PAYMENT-RESPONSE");
 if (pr) {
