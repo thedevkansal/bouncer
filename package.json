@@ -10,7 +10,8 @@
     "hedera:setup": "tsx scripts/hedera-setup.ts",
     "agent": "pnpm --filter @bouncer/agents research",
     "typecheck": "pnpm -r typecheck",
-    "ens:setup": "tsx scripts/ens-setup.ts"
+    "ens:setup": "tsx scripts/ens-setup.ts",
+    "world:verify": "tsx scripts/world-verify.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
