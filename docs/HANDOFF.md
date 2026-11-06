@@ -1,23 +1,25 @@
 # HANDOFF
 
-**Milestone:** M1 — x402 loop ✅, ENSv2 subname resolves live ✅, signature check ⬜, World ⬜
+**Milestone:** M1 ✅ (tag `m1-payment-loop`) → starting M2
 **Last commit:** see `git log -1`
 
 ## Live testnet state
-- Hedera: merchant/operator `0.0.11341680` (portal acct), agent payer `0.0.11342704` (ECDSA, hollow account completed), HCS topic `0.0.11342706`.
-- First settled payment: `0.0.7162784@1793984260.232389277` (Blocky402 fee payer) — https://hashscan.io/testnet/transaction/0.0.7162784@1793984260.232389277
-- ENSv2 Sepolia: `bouncer.eth` (owner = deployer/human `0x8A9b…7779`), R1 `0xafd2…d83D`, `dev.bouncer.eth` R2 `0xF500…5d67`, `research.dev.bouncer.eth` owner/addr = agent `0xFcD2…E744`, resolver `0x5C26…75B1`, expiry 24h from ~22:40 IST Fri.
+- Hedera: merchant/operator `0.0.11341680`, agent payer `0.0.11342704`, HCS topic `0.0.11342706`.
+- Settled payments: `0.0.7162784@1793984260.232389277` (anon), `0.0.7162784@1793988508.867548265` (signed as research.dev.bouncer.eth).
+- ENSv2 Sepolia: `bouncer.eth`, R1 `0xafd2…d83D`, R2 `0xF500…5d67`, `research.dev.bouncer.eth` → `0xFcD2…E744`, resolver `0x5C26…75B1`. **Agent name expires ~22:40 IST Sat** (24h) — renew before demo if needed.
+- World: app set to "Any account"; first approval 23:30 IST (amr pop/user/mfa, no acr).
 
-## Exact next step
-1. `packages/middleware/src/ens.ts`: identify hook — resolve `X-Agent-ENS` via viem (UR `0xeEeE…EeEe`), verify EIP-191 signature over `METHOD\npath\ntimestamp\nnonce`, nonce replay (allow one paid retry), ts ≤60s, read policy text records, walk registries for status/expiry (403 if unregistered/expired). Cache 10s.
-2. Agent: sign headers; research-agent uses `AGENT_ENS_NAME`.
-3. World device grant (`world.ts`) — still needs `WORLD_CLIENT_ID/SECRET` in `.env`.
-4. Tag `m1-payment-loop` once 1–3 done.
+## Exact next step (M2)
+1. Bind agent → human through API: `POST /world/bind {agent}` → QR → approved → `.state/bindings.json`. Then agent pays verified price ($0.001).
+2. Step-up hook in `index.ts`: if price > policy.stepUpAboveUsd → create World challenge, 403 `step_up_required {challengeId, url}`; agent retries with `X-Stepup-Challenge`; only `approved` + same agent + same route + unused → proceed to x402. Denied/expired/cancelled → 403, no 402 ever issued.
+3. HCS audit in `onSettled` (TopicMessageSubmitTransaction to 0.0.11342706) + `/audit` reading mirror node.
+4. Per-human aggregation demo (20 agents, one human), maxSpendPerDay tracking.
+5. Scripts: EAC reject (agent tries setText bouncer.maxSpendPerDay → revert), revoke (`R2.unregister(labelhash("research"))`).
 
 ## Gotchas
-- Alias-created Hedera accounts are hollow (key null) → facilitator rejects signature. `hedera-setup.ts` completes them.
-- x402 client blocks non-default assets: use `setSpendControls({ allowedAssets: [...] })`.
-- Don't `cat`/`grep` `.env` (contains keys).
+- Don't kill all node processes; kill only the PID on :4000.
+- Don't cat/grep `.env`.
+- Alias-created Hedera accounts are hollow until they pay a tx (handled in hedera-setup).
 
 ## Verify
-- `pnpm hedera:setup` (idempotent) · `pnpm dev:api` · `pnpm agent` · `npx tsx scripts/ens-check.ts`
+- `pnpm dev:api` · `pnpm agent` (signed) · `pnpm agent -- --anon` · `pnpm world:verify` · `npx tsx scripts/ens-check.ts`

@@ -17,18 +17,18 @@ Status: ⬜ todo · 🟡 partial · ✅ done
 ## World — Agent Pass
 | Requirement | How | Evidence | Status |
 |---|---|---|---|
-| Official World ID Agent Pass | World IdP OIDC device grant (auth.world.org) | TBD | ⬜ |
-| Complete journey request→completion→validated→action | step-up on /premium/dataset | TBD | ⬜ |
-| Denied/expired/cancelled path, action does not occur | challenge TTL 120s + cancel + access_denied | TBD | ⬜ |
-| Backend validation, no secrets client-side | jose JWKS verify in API | TBD | ⬜ |
+| Official World ID Agent Pass | World IdP OIDC device grant (auth.world.org) | `packages/middleware/src/world.ts`; real approval 23:30 IST (amr pop/user/mfa) | ✅ |
+| Complete journey request→completion→validated→action | bind + step-up on /premium/dataset | verification ✅; protected action wiring M2 | 🟡 |
+| Denied/expired/cancelled path, action does not occur | challenge TTL + cancel + access_denied | real `expired` x2 and `denied` x2 observed vs auth.world.org; action wiring M2 | 🟡 |
+| Backend validation, no secrets client-side | jose JWKS verify (iss, aud, RS256, auth_time freshness) in API; secret only in server env | `world.ts` validateIdToken | ✅ |
 | Integration debrief | docs/WORLD_FEEDBACK.md | TBD | ⬜ |
 
 ## ENS — Best Use of ENSv2
 | Requirement | How | Evidence | Status |
 |---|---|---|---|
 | ENSv2 on Sepolia | `bouncer.eth` via ETHRegistrar; own UserRegistry proxies R1 `0xafd24C00F565792338e786ec21F4c35d6AE2d83D` (*.bouncer.eth), R2 `0xF500553aB98Cf5c79589c30813ED10dc74bc5d67` (*.dev.bouncer.eth); agent resolver `0x5C268735993A5043b70c244a9D648F2d9E6675B1` | `scripts/ens-setup.ts`, `scripts/ens-check.ts` | ✅ |
-| ENSv2 central | identity, EAC perms, resolver policy, registry revoke | TBD | ⬜ |
-| No hard-coded values | live viem reads, 10s cache | TBD | ⬜ |
+| ENSv2 central | identity (sig vs resolved addr), resolver policy, registry status walk; EAC + revoke demo M2 | `packages/middleware/src/ens.ts` | 🟡 |
+| No hard-coded values | live UR + registry reads, 10s cache; forged sig / stale ts / unregistered name all rejected | `ens.ts` | ✅ |
 | Live demo link + open source | Vercel/Render + GitHub | TBD | ⬜ |
 | Bonus: agents as namespaces | `<agent>.<human>.<parent>` | TBD | ⬜ |
 

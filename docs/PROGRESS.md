@@ -6,8 +6,8 @@
 
 ## M1 (by 23:00) — tag m1-payment-loop
 - [x] 22:28 x402 402→pay→200 on Hedera testnet (tx 0.0.7162784@1793984260.232389277)
-- [~] 22:15 ENSv2 subname resolves live (signature check pending)
-- [ ] One Agent Pass verification validated server-side
+- [x] 23:35 ENSv2 subname resolves live + signature, nonce, 60s window, registry status checks
+- [x] 23:30 World Agent Pass verification approved + id_token validated server-side (also expired x2, denied x2 observed)
 
 ## M2 (by 01:00) — tag m2-full-flow
 - [ ] Per-human aggregation
