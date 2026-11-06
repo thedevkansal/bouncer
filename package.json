@@ -9,7 +9,8 @@
     "keys": "tsx scripts/gen-keys.ts",
     "hedera:setup": "tsx scripts/hedera-setup.ts",
     "agent": "pnpm --filter @bouncer/agents research",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "ens:setup": "tsx scripts/ens-setup.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
